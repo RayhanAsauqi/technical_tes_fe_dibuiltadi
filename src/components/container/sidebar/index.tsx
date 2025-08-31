@@ -4,14 +4,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
+import { Command, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
 import { sidebarItems } from "@/lib/constants/sidebar";
 import Cookies from "js-cookie";
 import { Logout } from "@/lib/api/auth-api";
@@ -216,9 +209,7 @@ export function Sidebar({ className, isOpen: controlledIsOpen, onToggle }: Impro
             </PopoverTrigger>
             <PopoverContent className="w-56 p-0" align="end">
               <Command>
-                <CommandInput placeholder="Search options..." />
                 <CommandList>
-                  <CommandEmpty>No options found.</CommandEmpty>
                   <CommandGroup>
                     {userOptions.map((option) => (
                       <CommandItem
@@ -226,7 +217,7 @@ export function Sidebar({ className, isOpen: controlledIsOpen, onToggle }: Impro
                         value={option.value}
                         asChild
                         className={cn(
-                          "cursor-pointer",
+                          "cursor-pointer p-3",
                           option.value === "logout" && "text-red-600 focus:text-red-600"
                         )}
                       >
