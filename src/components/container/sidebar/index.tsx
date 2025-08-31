@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Users, Menu, X, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -34,13 +34,20 @@ const getIsMobile = () => {
   return window.innerWidth < 768;
 };
 
-export function Sidebar({ className, isOpen = false, onToggle }: ImprovedSidebarProps) {
+const getInitialSidebarState = () => {
+  if (typeof window === "undefined") return false;
+  return !getIsMobile();
+};
+
+export function Sidebar({ className, isOpen: controlledIsOpen, onToggle }: ImprovedSidebarProps) {
   const navigate = useNavigate();
   const [userData, setUserData] = useState<UserData | null>(null);
   const [isMobile, setIsMobile] = useState(() => getIsMobile());
   const [comboboxOpen, setComboboxOpen] = useState(false);
+  const [internalIsOpen, setInternalIsOpen] = useState(() => getInitialSidebarState());
   const location = useLocation();
-  const popoverRef = useRef<HTMLDivElement>(null);
+
+  const isOpen = controlledIsOpen !== undefined ? controlledIsOpen : internalIsOpen;
 
   useEffect(() => {
     const userCookie = Cookies.get("user");
@@ -70,11 +77,18 @@ export function Sidebar({ className, isOpen = false, onToggle }: ImprovedSidebar
   };
 
   const handleToggle = () => {
-    onToggle?.(!isOpen);
+    const newIsOpen = !isOpen;
+    if (controlledIsOpen === undefined) {
+      setInternalIsOpen(newIsOpen);
+    }
+    onToggle?.(newIsOpen);
   };
 
   const handleLinkClick = () => {
-    if (isMobile) {
+    if (isMobile && isOpen) {
+      if (controlledIsOpen === undefined) {
+        setInternalIsOpen(false);
+      }
       onToggle?.(false);
     }
   };
@@ -83,27 +97,15 @@ export function Sidebar({ className, isOpen = false, onToggle }: ImprovedSidebar
     const handleResize = () => {
       const mobile = getIsMobile();
       setIsMobile(mobile);
-      if (mobile) {
+      if (mobile && controlledIsOpen === undefined) {
+        setInternalIsOpen(false);
         onToggle?.(false);
-      } else {
-        const savedState = localStorage.getItem("sidebarOpen");
-        if (savedState !== null) {
-          onToggle?.(JSON.parse(savedState));
-        }
       }
     };
 
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, [onToggle]);
-
-  const handleOverlayClick = (e: React.MouseEvent) => {
-    if (popoverRef.current && popoverRef.current.contains(e.target as Node)) {
-      return;
-    }
-
-    handleToggle();
-  };
+  }, [controlledIsOpen, onToggle]);
 
   const handleLogout = async () => {
     await Logout();
@@ -116,28 +118,20 @@ export function Sidebar({ className, isOpen = false, onToggle }: ImprovedSidebar
       label: "Profile",
       to: "/profile",
       icon: User,
-      action: () => {
-        setComboboxOpen(false);
-        if (isMobile) {
-          onToggle?.(false);
-        }
-      },
+      action: () => setComboboxOpen(false),
     },
     {
       value: "logout",
       label: "Logout",
       icon: LogOut,
-      action: () => {
-        setComboboxOpen(false);
-        handleLogout();
-      },
+      action: handleLogout,
     },
   ];
 
   return (
     <>
       {isMobile && isOpen && (
-        <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={handleOverlayClick} />
+        <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={handleToggle} />
       )}
 
       <aside
@@ -220,16 +214,7 @@ export function Sidebar({ className, isOpen = false, onToggle }: ImprovedSidebar
                 </div>
               </Button>
             </PopoverTrigger>
-            <PopoverContent
-              className="w-56 p-0"
-              align="end"
-              ref={popoverRef}
-              onInteractOutside={(e) => {
-                // Mencegah penutupan popover ketika berinteraksi di luar
-                // Biarkan popover tetap terbuka sampai pengguna memilih opsi
-                e.preventDefault();
-              }}
-            >
+            <PopoverContent className="w-56 p-0" align="end">
               <Command>
                 <CommandInput placeholder="Search options..." />
                 <CommandList>
@@ -248,9 +233,7 @@ export function Sidebar({ className, isOpen = false, onToggle }: ImprovedSidebar
                         {option.to ? (
                           <Link
                             to={option.to}
-                            onClick={() => {
-                              option.action?.();
-                            }}
+                            onClick={() => setComboboxOpen(false)}
                             className="flex items-center w-full"
                           >
                             <option.icon className="mr-2 h-4 w-4" />
