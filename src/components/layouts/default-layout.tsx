@@ -1,4 +1,3 @@
-// default-layout.tsx
 import { AppHeader } from "@/components/container/header";
 import { Sidebar } from "@/components/container/sidebar";
 import { useState, useEffect } from "react";
