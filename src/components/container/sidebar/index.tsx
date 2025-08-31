@@ -34,20 +34,12 @@ const getIsMobile = () => {
   return window.innerWidth < 768;
 };
 
-const getInitialSidebarState = () => {
-  if (typeof window === "undefined") return false;
-  return !getIsMobile();
-};
-
-export function Sidebar({ className, isOpen: controlledIsOpen, onToggle }: ImprovedSidebarProps) {
+export function Sidebar({ className, isOpen = false, onToggle }: ImprovedSidebarProps) {
   const navigate = useNavigate();
   const [userData, setUserData] = useState<UserData | null>(null);
   const [isMobile, setIsMobile] = useState(() => getIsMobile());
   const [comboboxOpen, setComboboxOpen] = useState(false);
-  const [internalIsOpen, setInternalIsOpen] = useState(() => getInitialSidebarState());
   const location = useLocation();
-
-  const isOpen = controlledIsOpen !== undefined ? controlledIsOpen : internalIsOpen;
 
   useEffect(() => {
     const userCookie = Cookies.get("user");
@@ -77,35 +69,34 @@ export function Sidebar({ className, isOpen: controlledIsOpen, onToggle }: Impro
   };
 
   const handleToggle = () => {
-    const newIsOpen = !isOpen;
-    if (controlledIsOpen === undefined) {
-      setInternalIsOpen(newIsOpen);
-    }
-    onToggle?.(newIsOpen);
+    onToggle?.(!isOpen);
   };
 
   const handleLinkClick = () => {
-    if (isMobile && isOpen) {
-      if (controlledIsOpen === undefined) {
-        setInternalIsOpen(false);
-      }
-      onToggle?.(false);
+    if (isMobile) {
+      onToggle?.(false); // tutup sidebar setelah klik link di mobile
     }
+    // Di desktop, biarkan status sidebar tetap seperti sebelumnya
   };
 
   useEffect(() => {
     const handleResize = () => {
       const mobile = getIsMobile();
       setIsMobile(mobile);
-      if (mobile && controlledIsOpen === undefined) {
-        setInternalIsOpen(false);
+      if (mobile) {
         onToggle?.(false);
+      } else {
+        // Ketika resize ke desktop, gunakan status yang tersimpan
+        const savedState = localStorage.getItem("sidebarOpen");
+        if (savedState !== null) {
+          onToggle?.(JSON.parse(savedState));
+        }
       }
     };
 
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, [controlledIsOpen, onToggle]);
+  }, [onToggle]);
 
   const handleLogout = async () => {
     await Logout();

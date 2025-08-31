@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import Pagination from "@/components/ui/pagination";
 import useDebounceState from "@/hooks/use-debounce";
 import useDisclosure from "@/hooks/use-disclosure";
@@ -58,7 +59,8 @@ export default function CustomerPage() {
   const { data: provinces } = useFetch<ProvinceRes>(`${API_ENDPOINT}/provinces/list`);
   const { data: cities } = useFetch<CitiesRes>(`${API_ENDPOINT}/cities/list`);
 
-  const costumer = (data?.items ?? []).map((item) => ({
+  const costumer = (data?.items ?? []).map((item, idx) => ({
+    no: (Number(pagination.page) - 1) * Number(pagination.perPage) + (idx + 1),
     id: item.code,
     name: item.name,
     group: item.group.name,
@@ -121,94 +123,115 @@ export default function CustomerPage() {
   }));
   return (
     <DefaultLayout pageTitle="Customer" subTitle="Overview of your activities">
-      <div className="flex flex-col gap-2 pb-8 pt-2  lg:justify-between">
-        <Input
-          placeholder="Search name customer.."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full "
-        />
-        <div className="flex flex-col lg:flex-row gap-2 ">
+      <div className="flex flex-col gap-5 pb-8 pt-2  lg:justify-between">
+        <div className="space-y-2">
+          <Label>Search</Label>
+          <Input
+            placeholder="Search name customer.."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full "
+          />
+        </div>
+        <div className="flex flex-col lg:flex-row gap-2 lg:items-center ">
           <div className=" w-full  grid  md:grid-cols-3 xl:flex gap-2">
-            <DatePicker
-              date={dateRange.startDate ? new Date(dateRange.startDate) : undefined}
-              onDateChange={(date) =>
-                setDateRange((prev) => ({
-                  ...prev,
-                  startDate: date ? format(date, "yyyy-MM-dd") : "",
-                }))
-              }
-              placeholder="Select start date"
-            />
-            <DatePicker
-              date={dateRange.endDate ? new Date(dateRange.endDate) : undefined}
-              onDateChange={(date) =>
-                setDateRange((prev) => ({
-                  ...prev,
-                  endDate: date ? format(date, "yyyy-MM-dd") : "",
-                }))
-              }
-              placeholder="Select end date"
-              className="w-full"
-              disabled={!dateRange.startDate}
-            />
-            <ShadcnUiSelect
-              value={filters.provinceCode}
-              className="w-full"
-              onChange={(val) => setFilters((prev) => ({ ...prev, provinceCode: val }))}
-              options={[
-                ...(provinces?.items ?? []).map((prov) => ({
-                  label: prov.name,
-                  value: prov.code,
-                })),
-              ]}
-              placeholder="Select by province"
-            />
-            <ShadcnUiSelect
-              value={filters.cityCode}
-              onChange={(val) => setFilters((prev) => ({ ...prev, cityCode: val }))}
-              options={[
-                ...(cities?.items ?? []).map((city) => ({
-                  label: city.name,
-                  value: city.code,
-                })),
-              ]}
-              className="w-full"
-              placeholder="Filter by City"
-            />
-            <ShadcnUiSelect
-              value={pagination.sortDirection}
-              onChange={(val) =>
-                setPagination((prev) => ({ ...prev, page: "1", sortDirection: val }))
-              }
-              className="w-full"
-              options={[
-                {
-                  label: "Ascending",
-                  value: "asc",
-                },
-                {
-                  label: "Descending",
-                  value: "desc",
-                },
-              ]}
-              placeholder="Sort direction"
-            />
-            <ShadcnUiSelect
-              value={pagination.sortBy}
-              onChange={(val) => setPagination((prev) => ({ ...prev, page: "1", sortBy: val }))}
-              placeholder="Sort by"
-              options={[
-                {
-                  label: "Created At",
-                  value: "created_at",
-                },
-                {
-                  label: "Name",
-                  value: "name",
-                },
-              ]}
-            />
+            <div className="space-y-2">
+              <Label>Start Date</Label>
+              <DatePicker
+                date={dateRange.startDate ? new Date(dateRange.startDate) : undefined}
+                onDateChange={(date) =>
+                  setDateRange((prev) => ({
+                    ...prev,
+                    startDate: date ? format(date, "yyyy-MM-dd") : "",
+                  }))
+                }
+                placeholder="Select start date"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>End Date</Label>
+              <DatePicker
+                date={dateRange.endDate ? new Date(dateRange.endDate) : undefined}
+                onDateChange={(date) =>
+                  setDateRange((prev) => ({
+                    ...prev,
+                    endDate: date ? format(date, "yyyy-MM-dd") : "",
+                  }))
+                }
+                placeholder="Select end date"
+                className="w-full"
+                disabled={!dateRange.startDate}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Province</Label>
+              <ShadcnUiSelect
+                value={filters.provinceCode}
+                className="w-full"
+                onChange={(val) => setFilters((prev) => ({ ...prev, provinceCode: val }))}
+                options={[
+                  ...(provinces?.items ?? []).map((prov) => ({
+                    label: prov.name,
+                    value: prov.code,
+                  })),
+                ]}
+                placeholder="Select by province"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>City</Label>
+              <ShadcnUiSelect
+                value={filters.cityCode}
+                onChange={(val) => setFilters((prev) => ({ ...prev, cityCode: val }))}
+                options={[
+                  ...(cities?.items ?? []).map((city) => ({
+                    label: city.name,
+                    value: city.code,
+                  })),
+                ]}
+                className="w-full"
+                placeholder="Filter by City"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Sort Direction</Label>
+              <ShadcnUiSelect
+                value={pagination.sortDirection}
+                onChange={(val) =>
+                  setPagination((prev) => ({ ...prev, page: "1", sortDirection: val }))
+                }
+                className="w-full"
+                options={[
+                  {
+                    label: "Ascending",
+                    value: "asc",
+                  },
+                  {
+                    label: "Descending",
+                    value: "desc",
+                  },
+                ]}
+                placeholder="Sort direction"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Sort By</Label>
+              <ShadcnUiSelect
+                value={pagination.sortBy}
+                onChange={(val) => setPagination((prev) => ({ ...prev, page: "1", sortBy: val }))}
+                placeholder="Sort by"
+                options={[
+                  {
+                    label: "Created At",
+                    value: "created_at",
+                  },
+                  {
+                    label: "Name",
+                    value: "name",
+                  },
+                ]}
+              />
+            </div>
           </div>
           <Button
             variant="default"
@@ -225,6 +248,7 @@ export default function CustomerPage() {
         <ShadcnTable
           rows={costumer}
           columns={[
+            { key: "no", title: "No" },
             { key: "name", title: "Name" },
             { key: "type", title: "Type" },
             { key: "companyType", title: "Company Type" },
