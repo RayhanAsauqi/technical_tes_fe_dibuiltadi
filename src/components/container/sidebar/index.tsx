@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Users, Menu, X, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -40,6 +40,7 @@ export function Sidebar({ className, isOpen = false, onToggle }: ImprovedSidebar
   const [isMobile, setIsMobile] = useState(() => getIsMobile());
   const [comboboxOpen, setComboboxOpen] = useState(false);
   const location = useLocation();
+  const popoverRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const userCookie = Cookies.get("user");
@@ -74,9 +75,8 @@ export function Sidebar({ className, isOpen = false, onToggle }: ImprovedSidebar
 
   const handleLinkClick = () => {
     if (isMobile) {
-      onToggle?.(false); // tutup sidebar setelah klik link di mobile
+      onToggle?.(false);
     }
-    // Di desktop, biarkan status sidebar tetap seperti sebelumnya
   };
 
   useEffect(() => {
@@ -86,7 +86,6 @@ export function Sidebar({ className, isOpen = false, onToggle }: ImprovedSidebar
       if (mobile) {
         onToggle?.(false);
       } else {
-        // Ketika resize ke desktop, gunakan status yang tersimpan
         const savedState = localStorage.getItem("sidebarOpen");
         if (savedState !== null) {
           onToggle?.(JSON.parse(savedState));
@@ -97,6 +96,14 @@ export function Sidebar({ className, isOpen = false, onToggle }: ImprovedSidebar
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, [onToggle]);
+
+  const handleOverlayClick = (e: React.MouseEvent) => {
+    if (popoverRef.current && popoverRef.current.contains(e.target as Node)) {
+      return;
+    }
+
+    handleToggle();
+  };
 
   const handleLogout = async () => {
     await Logout();
@@ -109,20 +116,28 @@ export function Sidebar({ className, isOpen = false, onToggle }: ImprovedSidebar
       label: "Profile",
       to: "/profile",
       icon: User,
-      action: () => setComboboxOpen(false),
+      action: () => {
+        setComboboxOpen(false);
+        if (isMobile) {
+          onToggle?.(false);
+        }
+      },
     },
     {
       value: "logout",
       label: "Logout",
       icon: LogOut,
-      action: handleLogout,
+      action: () => {
+        setComboboxOpen(false);
+        handleLogout();
+      },
     },
   ];
 
   return (
     <>
       {isMobile && isOpen && (
-        <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={handleToggle} />
+        <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={handleOverlayClick} />
       )}
 
       <aside
@@ -205,7 +220,16 @@ export function Sidebar({ className, isOpen = false, onToggle }: ImprovedSidebar
                 </div>
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-56 p-0" align="end">
+            <PopoverContent
+              className="w-56 p-0"
+              align="end"
+              ref={popoverRef}
+              onInteractOutside={(e) => {
+                // Mencegah penutupan popover ketika berinteraksi di luar
+                // Biarkan popover tetap terbuka sampai pengguna memilih opsi
+                e.preventDefault();
+              }}
+            >
               <Command>
                 <CommandInput placeholder="Search options..." />
                 <CommandList>
@@ -224,7 +248,9 @@ export function Sidebar({ className, isOpen = false, onToggle }: ImprovedSidebar
                         {option.to ? (
                           <Link
                             to={option.to}
-                            onClick={() => setComboboxOpen(false)}
+                            onClick={() => {
+                              option.action?.();
+                            }}
                             className="flex items-center w-full"
                           >
                             <option.icon className="mr-2 h-4 w-4" />
