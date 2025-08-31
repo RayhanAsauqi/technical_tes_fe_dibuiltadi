@@ -1,16 +1,11 @@
 import ShadcnTable from "@/components/container/shadcn-table";
+import ShadcnUiSelect from "@/components/container/shadcnui-select";
 import DefaultLayout from "@/components/layouts/default-layout";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import Pagination from "@/components/ui/pagination";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import useDebounceState from "@/hooks/use-debounce";
 import { useFetch } from "@/hooks/use-fetch";
 import { API_ENDPOINT } from "@/lib/constants/endpoint";
@@ -56,7 +51,8 @@ export default function TransactionsPage() {
       return acc;
     }, [] as typeof customerList.items) || [];
 
-  const transactions = (data?.items ?? []).map((item) => ({
+  const transactions = (data?.items ?? []).map((item, idx) => ({
+    no: (Number(pagination.page) - 1) * Number(pagination.perPage) + (idx + 1),
     id: item.referenceNo,
     customer: item.customer.name,
     salesName: item.sales,
@@ -78,87 +74,106 @@ export default function TransactionsPage() {
   }));
   return (
     <DefaultLayout pageTitle="Transactions" subTitle="Your transactions activity">
-      <div className="flex flex-col gap-2 pb-8 pt-2  md:justify-between">
-        <Input
-          placeholder="Search name customer.."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full "
-        />
-        <div className="flex flex-col lg:flex-row gap-2 ">
+      <div className="flex flex-col gap-5 pb-8 pt-2  md:justify-between">
+        <div className="space-y-2">
+          <Label>Search</Label>
+          <Input
+            placeholder="Search name customer.."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full "
+          />
+        </div>
+        <div className="flex flex-col lg:flex-row gap-2  ">
           <div className=" w-full  grid  md:grid-cols-3 lg:flex gap-2">
-            <DatePicker
-              date={dateRange.startDate ? new Date(dateRange.startDate) : undefined}
-              onDateChange={(date) =>
-                setDateRange((prev) => ({
-                  ...prev,
-                  startDate: date ? format(date, "yyyy-MM-dd") : "",
-                }))
-              }
-              placeholder="Select start date"
-            />
-            <DatePicker
-              date={dateRange.endDate ? new Date(dateRange.endDate) : undefined}
-              onDateChange={(date) =>
-                setDateRange((prev) => ({
-                  ...prev,
-                  endDate: date ? format(date, "yyyy-MM-dd") : "",
-                }))
-              }
-              placeholder="Select end date"
-              className="w-full"
-              disabled={!dateRange.startDate}
-            />
-            <Select
-              value={pagination.sortDirection}
-              onValueChange={(val) =>
-                setPagination((prev) => ({ ...prev, page: "1", sortDirection: val }))
-              }
-            >
-              <SelectTrigger className="w-full ">
-                <SelectValue placeholder="Sort direction" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="asc">Ascending</SelectItem>
-                <SelectItem value="desc">Descending</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select
-              value={filters.customerCode}
-              onValueChange={(val) => setFilters((prev) => ({ ...prev, customerCode: val }))}
-            >
-              <SelectTrigger className="w-full ">
-                <SelectValue placeholder="Filter by Customer" />
-              </SelectTrigger>
-              <SelectContent>
-                {uniqueCustomers.map((customer, index) => (
-                  <SelectItem key={`${customer.code}-${index}`} value={customer.code}>
-                    {customer.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select
-              value={filters.salesCode}
-              onValueChange={(val) => setFilters((prev) => ({ ...prev, salesCode: val }))}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Filter by Sales" />
-              </SelectTrigger>
-              <SelectContent>
-                {SalesList?.items.map((sales) => (
-                  <SelectItem key={sales.code} value={sales.code}>
-                    {sales.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="space-y-2">
+              <Label>Start Date</Label>
+              <DatePicker
+                date={dateRange.startDate ? new Date(dateRange.startDate) : undefined}
+                onDateChange={(date) =>
+                  setDateRange((prev) => ({
+                    ...prev,
+                    startDate: date ? format(date, "yyyy-MM-dd") : "",
+                  }))
+                }
+                placeholder="Select start date"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>End Date</Label>
+              <DatePicker
+                date={dateRange.endDate ? new Date(dateRange.endDate) : undefined}
+                onDateChange={(date) =>
+                  setDateRange((prev) => ({
+                    ...prev,
+                    endDate: date ? format(date, "yyyy-MM-dd") : "",
+                  }))
+                }
+                placeholder="Select end date"
+                className="w-full"
+                disabled={!dateRange.startDate}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Sort Direction</Label>
+              <ShadcnUiSelect
+                value={pagination.sortDirection}
+                onChange={(val) =>
+                  setPagination((prev) => ({ ...prev, page: "1", sortDirection: val }))
+                }
+                className="w-full"
+                options={[
+                  {
+                    label: "Ascending",
+                    value: "asc",
+                  },
+                  {
+                    label: "Descending",
+                    value: "desc",
+                  },
+                ]}
+                placeholder="Sort direction"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Customer</Label>
+              <ShadcnUiSelect
+                value={filters.customerCode}
+                onChange={(val) => setFilters((prev) => ({ ...prev, customerCode: val }))}
+                options={[
+                  ...(uniqueCustomers ?? []).map((customer) => ({
+                    label: customer.name,
+                    value: customer.code,
+                  })),
+                ]}
+                className="w-full"
+                placeholder="Filter by Customer"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Sales</Label>
+              <ShadcnUiSelect
+                value={filters.salesCode}
+                onChange={(val) => setFilters((prev) => ({ ...prev, salesCode: val }))}
+                options={[
+                  ...(SalesList?.items ?? []).map((sales) => ({
+                    label: sales.name,
+                    value: sales.code,
+                  })),
+                ]}
+                className="w-full"
+                placeholder="Filter by Sales"
+              />
+            </div>
           </div>
         </div>
       </div>
       <ShadcnTable
         rows={transactions}
         columns={[
+          { key: "no", title: " No" },
           { key: "salesName", title: " Sales Name" },
           { key: "customer", title: " Customer" },
           { key: "amountDue", title: " Amount Due" },

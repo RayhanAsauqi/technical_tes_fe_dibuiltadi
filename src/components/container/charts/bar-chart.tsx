@@ -54,7 +54,7 @@ export function ChartBarDefault({
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="aspect-auto h-[250px] w-full">
-          <BarChart accessibilityLayer data={data} height={10000}>
+          <BarChart accessibilityLayer data={data} >
             <CartesianGrid vertical={false} />
             <XAxis
               dataKey="label"

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 export default function LoadingPage() {
-  const [dots, setDots] = useState("");
+  const [dots, setDots] = useState<string>("");
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -22,7 +22,7 @@ export default function LoadingPage() {
         <div className="space-y-2">
           <h1 className="text-xl font-medium text-foreground">Preparing your page{dots}</h1>
           <p className="text-muted-foreground">Hang tight, this won’t take long.</p>
-        </div>  
+        </div>
       </div>
     </div>
   );

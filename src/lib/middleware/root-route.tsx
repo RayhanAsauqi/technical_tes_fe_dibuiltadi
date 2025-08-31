@@ -5,7 +5,7 @@ export default function RootRoute() {
   const accessToken = Cookies.get("accessToken");
 
   if (accessToken) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/summary" replace />;
   }
 
   return <Navigate to="/auth" replace />;
