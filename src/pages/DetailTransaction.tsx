@@ -42,19 +42,141 @@ export default function DetailTransactionPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 p-4">
-        <div className="max-w-6xl mx-auto space-y-6">
-          {/* Title skeleton */}
-          <Skeleton className="h-8 w-1/4 rounded" />
+      <div className="min-h-screen p-4">
+        <div className="max-w-6xl mx-auto">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-4">
+              <Button
+                variant="ghost"
+                onClick={handleBack}
+                className="mb-2 flex items-center gap-2 text-muted-foreground hover:text-foreground"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back
+              </Button>
+              <div>
+                <h1 className="text-2xl font-bold">Invoice Detail</h1>
+                <Skeleton className="h-4 w-32 mt-1" />
+              </div>
+            </div>
+            <Skeleton className="h-6 w-20 rounded-full" />
+          </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Main Content */}
             <div className="lg:col-span-2 space-y-6">
-              <Skeleton className="h-64 w-full rounded" />
-              <Skeleton className="h-96 w-full rounded" />
+              {/* Invoice Info */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Building className="w-5 h-5 mr-2" />
+                    Invoice Information
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Reference No</label>
+                      <Skeleton className="h-5 w-full mt-1" />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Sales</label>
+                      <Skeleton className="h-5 w-full mt-1" />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Customer Code</label>
+                      <Skeleton className="h-5 w-full mt-1" />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Customer Name</label>
+                      <Skeleton className="h-5 w-full mt-1" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Items */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Product Details</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <ShadcnTable
+                      rows={[]}
+                      columns={[
+                        { key: "productName", title: "Product Name" },
+                        { key: "quantity", title: "Quantity" },
+                        { key: "price", title: "Price" },
+                        { key: "discount", title: "Discount" },
+                        { key: "priceSubtotal", title: "Price Subtotal" },
+                        { key: "marginSubtotal", title: "Margin Subtotal" },
+                      ]}
+                      isLoading={true}
+                      emptyStateMessage="Loading products..."
+                    />
+                  </div>
+                </CardContent>
+              </Card>
             </div>
+
+            {/* Sidebar */}
             <div className="space-y-6">
-              <Skeleton className="h-48 w-full rounded" />
-              <Skeleton className="h-32 w-full rounded" />
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Calendar className="w-5 h-5 mr-2" />
+                    Important Dates
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Order Date</label>
+                    <Skeleton className="h-4 w-full mt-1" />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Due Date</label>
+                    <Skeleton className="h-4 w-full mt-1" />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Created At</label>
+                    <Skeleton className="h-4 w-full mt-1" />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Paid At</label>
+                    <Skeleton className="h-4 w-full mt-1" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <CreditCard className="w-5 h-5 mr-2" />
+                    Payment Summary
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Subtotal</span>
+                    <Skeleton className="h-4 w-20" />
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Tax</span>
+                    <Skeleton className="h-4 w-20" />
+                  </div>
+                  <hr />
+                  <div className="flex justify-between">
+                    <span className="text-base font-semibold">Total</span>
+                    <Skeleton className="h-5 w-24" />
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Remaining Balance</span>
+                    <Skeleton className="h-4 w-20" />
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>

@@ -18,16 +18,22 @@ export const registerSchema = z.object({
   address: z.string().min(5, {
     message: "Address must be at least 5 characters",
   }),
-  password: z.string().min(6, {
-    message: "Password must be at least 6 characters",
-  }),
+  password: z
+    .string()
+    .min(6, { message: "Password must be at least 6 characters" })
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).+$/, {
+      message:
+        "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character",
+    }),
 });
 
 export const loginSchema = z.object({
-  phone: z.string().min(2, {
-    message: "Username must be at least 2 characters",
+  phone: z.string().min(10, {
+    message: "Phone is required",
   }),
-  password: z.string().min(2),
+  password: z.string().min(2, {
+    message: "Password is required",
+  }),
 });
 
 export type LoginFormSchema = z.infer<typeof loginSchema>;

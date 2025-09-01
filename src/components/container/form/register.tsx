@@ -3,22 +3,14 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useForm } from "react-hook-form";
 import { Input } from "../../ui/input";
 import { Button } from "../../ui/button";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Register } from "@/lib/api/auth-api";
 import { alertError, alertSuccess } from "@/utils/alert";
 import { ExtendedError } from "@/lib/extended-error";
 import { registerSchema, type RegisterFormSchema } from "@/lib/validation/auth";
-import type { RegisterPayload } from "@/lib/types/payload/auth";
 
 export default function RegisterForm() {
   const [submitLoading, setSubmitLoading] = useState<boolean>(false);
-  const formData = useRef<RegisterPayload>({
-    name: "",
-    phone: "",
-    email: "",
-    address: "",
-    password: "",
-  });
 
   const form = useForm<RegisterFormSchema>({
     resolver: zodResolver(registerSchema),
@@ -32,7 +24,6 @@ export default function RegisterForm() {
   });
 
   async function onSubmit(values: RegisterFormSchema) {
-    formData.current = values;
     setSubmitLoading(true);
 
     try {

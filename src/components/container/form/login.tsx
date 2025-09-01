@@ -2,23 +2,18 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../../ui/form";
 import { useForm } from "react-hook-form";
 import { Input } from "../../ui/input";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Login } from "../../../lib/api/auth-api";
 import { Button } from "../../ui/button";
 import { alertError } from "../../../utils/alert";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
-import type { LoginPayload } from "@/lib/types/payload/auth";
 import { ExtendedError } from "@/lib/extended-error";
 import { loginSchema, type LoginFormSchema } from "@/lib/validation/auth";
 
 export default function LoginForm() {
   const navigate = useNavigate();
   const [submitLoading, setSubmitLoading] = useState<boolean>(false);
-  const formDataRef = useRef<LoginPayload>({
-    phone: "",
-    password: "",
-  });
 
   const form = useForm<LoginFormSchema>({
     resolver: zodResolver(loginSchema),
@@ -29,7 +24,6 @@ export default function LoginForm() {
   });
 
   async function onSubmit(values: LoginFormSchema) {
-    formDataRef.current = values;
     setSubmitLoading(true);
     try {
       const data = await Login({
@@ -60,8 +54,10 @@ export default function LoginForm() {
               message: String(message),
             });
           });
+        } else if (error.status === 400) {
+          alertError("Invalid phone number  or password", "bottom-right");
         } else {
-          alertError(error.responseMessage);
+          alertError("Login failed. Please try again later.", "bottom-right");
         }
       } else {
         alertError("Login failed. Please try again.");

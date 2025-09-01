@@ -62,7 +62,7 @@ export default function CustomerPage() {
   const costumer = (data?.items ?? []).map((item, idx) => ({
     no: (Number(pagination.page) - 1) * Number(pagination.perPage) + (idx + 1),
     id: item.code,
-    name: item.name,
+    name: <p className="truncate w-32">{item.name}</p>,
     group: item.group.name,
     area: item.area ?? "not found",
     province: item.province,
@@ -265,6 +265,7 @@ export default function CustomerPage() {
             { key: "action", title: "Action" },
           ]}
           isLoading={loading}
+          refreshCb={refetch}
           emptyStateMessage="not found"
         />
       </div>

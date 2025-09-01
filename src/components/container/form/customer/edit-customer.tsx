@@ -8,25 +8,15 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useFetch } from "@/hooks/use-fetch";
-import { CreateCustomer, UpdateCustomer } from "@/lib/api/customer-api";
+import { UpdateCustomer } from "@/lib/api/customer-api";
 import { API_ENDPOINT } from "@/lib/constants/endpoint";
 import type { CustomerPayload } from "@/lib/types/payload/customer";
-import type { CitiesRes } from "@/lib/types/res/cities";
-import type { ProvinceRes } from "@/lib/types/res/province";
-import { customerSchema, type FormCustomerSchema } from "@/lib/validation/customer";
+import { customerEditSchema, type FormEditCustomerSchema } from "@/lib/validation/customer";
 import { alertError } from "@/utils/alert";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState, useImperativeHandle, forwardRef, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
-import { AutoComplete } from "@/components/ui/auto-complete";
 import type { CustomerDetailRes } from "@/lib/types/res/customer";
 
 export type EditCustomerFormRef = {
@@ -42,14 +32,12 @@ type CustomerFormProps = {
 const EditCustomerForm = forwardRef<EditCustomerFormRef, CustomerFormProps>(
   ({ onSuccess, code }, ref) => {
     const [submitLoading, setSubmitLoading] = useState<boolean>(false);
-    const { data: provinces } = useFetch<ProvinceRes>(`${API_ENDPOINT}/provinces/list`);
-    const { data: cities } = useFetch<CitiesRes>(`${API_ENDPOINT}/cities/list`);
-    const { data: detailCustomer } = useFetch<CustomerDetailRes>(
+    const { data: detailCustomer, loading } = useFetch<CustomerDetailRes>(
       `${API_ENDPOINT}/customers/${code}`
     );
 
-    const form = useForm<FormCustomerSchema>({
-      resolver: zodResolver(customerSchema),
+    const form = useForm<FormEditCustomerSchema>({
+      resolver: zodResolver(customerEditSchema),
       defaultValues: {
         name: "",
         identityNo: "",
@@ -57,14 +45,10 @@ const EditCustomerForm = forwardRef<EditCustomerFormRef, CustomerFormProps>(
         email: "",
         phone: "",
         mobile_phone: "",
-        provinceCode: "",
-        cityCode: "",
         address: "",
-        companyType: "person",
       },
     });
 
-    // Set default value jika edit
     useEffect(() => {
       if (detailCustomer) {
         form.reset({
@@ -74,22 +58,18 @@ const EditCustomerForm = forwardRef<EditCustomerFormRef, CustomerFormProps>(
           email: detailCustomer.email ?? "",
           phone: detailCustomer.phone ?? "",
           mobile_phone: detailCustomer.mobilePhone ?? "",
-          provinceCode: detailCustomer.province.code ?? "",
-          cityCode: detailCustomer.city.code ?? "",
           address: detailCustomer.address ?? "",
-          companyType: detailCustomer.companyType ?? "person",
         });
       }
     }, [detailCustomer, form]);
 
-    async function onSubmit(values: FormCustomerSchema) {
+    async function onSubmit(values: FormEditCustomerSchema) {
       setSubmitLoading(true);
       try {
-        if (code) {
-          await UpdateCustomer(code, values as CustomerPayload);
-        } else {
-          await CreateCustomer(values as CustomerPayload);
+        if (!code) {
+          throw new Error("Customer code is missing.");
         }
+        await UpdateCustomer(code, values as CustomerPayload);
         onSuccess?.();
       } catch (error) {
         alertError(String(error), "bottom-right");
@@ -106,6 +86,9 @@ const EditCustomerForm = forwardRef<EditCustomerFormRef, CustomerFormProps>(
 
     return (
       <Form {...form}>
+        {loading && (
+          <div className="absolute top-0 left-0 w-full h-full bg-white/50 backdrop-blur-[1px] rounded-xl z-30"></div>
+        )}
         <form className="space-y-3 md:space-y-4">
           <FormField
             control={form.control}
@@ -185,60 +168,7 @@ const EditCustomerForm = forwardRef<EditCustomerFormRef, CustomerFormProps>(
               </FormItem>
             )}
           />
-          <FormField
-            control={form.control}
-            name="provinceCode"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Province</FormLabel>
-                <FormControl>
-                  <AutoComplete
-                    options={
-                      provinces?.items
-                        ? provinces.items.map((province) => ({
-                            label: province.name,
-                            value: province.code,
-                          }))
-                        : []
-                    }
-                    value={field.value}
-                    onValueChange={field.onChange}
-                    placeholder="Select province..."
-                    searchPlaceholder="Search province..."
-                    emptyMessage="No province found."
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="cityCode"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>City</FormLabel>
-                <FormControl>
-                  <AutoComplete
-                    options={
-                      cities?.items
-                        ? cities.items.map((city) => ({
-                            label: city.name,
-                            value: city.code,
-                          }))
-                        : []
-                    }
-                    value={field.value}
-                    onValueChange={field.onChange}
-                    placeholder="Select city..."
-                    searchPlaceholder="Search city..."
-                    emptyMessage="No city found."
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+
           <FormField
             control={form.control}
             name="address"
@@ -247,27 +177,6 @@ const EditCustomerForm = forwardRef<EditCustomerFormRef, CustomerFormProps>(
                 <FormLabel>Address</FormLabel>
                 <FormControl>
                   <Input placeholder="Enter your address" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="companyType"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Company Type</FormLabel>
-                <FormControl>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select type..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="person">Person</SelectItem>
-                      <SelectItem value="company">Company</SelectItem>
-                    </SelectContent>
-                  </Select>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -282,4 +191,3 @@ const EditCustomerForm = forwardRef<EditCustomerFormRef, CustomerFormProps>(
 EditCustomerForm.displayName = "EditCustomerForm";
 
 export default EditCustomerForm;
-// ...existing code...

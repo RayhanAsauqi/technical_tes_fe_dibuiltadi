@@ -1,19 +1,36 @@
-import path from "path";
 import tailwindcss from "@tailwindcss/vite";
-import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import path from "path";
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  server: {
-    allowedHosts: [
-      "42a77a6cb5c2.ngrok-free.app", 
-    ],
-  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+    },
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes("node_modules")) {
+            if (id.includes("react") || id.includes("react-dom")) {
+              return "react-vendor";
+            }
+            if (id.includes("@mui") || id.includes("antd") || id.includes("chakra-ui")) {
+              return "ui-vendor";
+            }
+            if (id.includes("chart") || id.includes("d3") || id.includes("recharts")) {
+              return "chart-vendor";
+            }
+            if (id.includes("lodash") || id.includes("moment") || id.includes("date-fns")) {
+              return "utils-vendor";
+            }
+            return "vendor";
+          }
+        },
+      },
     },
   },
 });

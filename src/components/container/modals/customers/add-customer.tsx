@@ -36,7 +36,11 @@ export default function AddCustomerModal(props: AddCustomerProps) {
           <div className="w-full grid grid-cols-1 gap-2">
             <CustomerForm
               ref={formRef}
-              onSuccess={() => alertSuccess("Customer Created!", "bottom-right")}
+              onSuccess={() => {
+                alertSuccess("Customer Created!", "bottom-right");
+                props.setIsOpenAction(false);
+                if (props.refreshCb) props.refreshCb();
+              }}
             />
           </div>
         </div>
