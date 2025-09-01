@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/select";
 
 import { AutoComplete } from "@/components/ui/auto-complete";
+import { ExtendedError } from "@/lib/extended-error";
 
 export type CustomerFormRef = {
   submitForm: () => void;
@@ -64,7 +65,20 @@ const CustomerForm = forwardRef<CustomerFormRef, CustomerFormProps>(({ onSuccess
       await CreateCustomer(values as CustomerPayload);
       onSuccess?.();
     } catch (error) {
-      alertError(String(error), "bottom-right");
+      if (error instanceof ExtendedError) {
+        if (error.isValidationError() && error.errors) {
+          Object.entries(error.errors).forEach(([key, message]) => {
+            form.setError(key as keyof FormCustomerSchema, {
+              type: "server",
+              message: String(message),
+            });
+          });
+        } else {
+          alertError(error.responseMessage);
+        }
+      } else {
+        alertError("Login failed. Please try again.");
+      }
     } finally {
       setSubmitLoading(false);
     }

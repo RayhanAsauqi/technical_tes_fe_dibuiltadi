@@ -35,9 +35,14 @@ export default function EditCustomerModal(props: EditCustomerProps) {
         </DialogHeader>
         <div className="max-h-96 w-full overflow-y-auto py-3 px-2 ">
           <div className="w-full grid grid-cols-1 gap-2">
+            
             <EditCustomerForm
               ref={formRef}
-              onSuccess={() => alertSuccess("Customer Updated!", "bottom-right")}
+              onSuccess={() => {
+                alertSuccess("Customer Created!", "bottom-right");
+                props.setIsOpenAction(false);
+                if (props.refreshCb) props.refreshCb();
+              }}
               code={props.code}
             />
           </div>

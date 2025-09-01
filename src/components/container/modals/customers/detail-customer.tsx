@@ -26,7 +26,7 @@ type DetailCustomerProps = {
 export default function DetailCustomerModal(props: DetailCustomerProps) {
   const { isOpen, setIsOpenAction } = useDisclosure();
   const { data, loading } = useFetch<CustomerDetailRes>(`${API_ENDPOINT}/customers/${props.code}`);
-  console.log(data);
+
   return (
     <Dialog
       open={props.isOpen ? props.isOpen : isOpen}

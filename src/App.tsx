@@ -4,14 +4,14 @@ import { Toaster } from "react-hot-toast";
 import PrivateRoute from "./lib/middleware/private-route";
 import RootRoute from "./lib/middleware/root-route";
 import LoadingPage from "./pages/Loading";
+import DetailTransactionPage from "./pages/DetailTransaction";
+import SummaryPage from "./pages/Summary";
+import CustomerPage from "./pages/Customer";
+import TransactionsPage from "./pages/Transactions";
+import ProfilePage from "./pages/Profile";
 
-const SummaryPage = lazy(() => import("./pages/Summary"));
 const AuthPage = lazy(() => import("./pages/Auth"));
-const CustomerPage = lazy(() => import("./pages/Customer"));
-const TransactionsPage = lazy(() => import("./pages/Transactions"));
-const ProfilePage = lazy(() => import("./pages/Profile"));
 const NotFoundPage = lazy(() => import("./pages/NotFound"));
-const DetailTransactionPage = lazy(() => import("./pages/DetailTransaction"));
 
 function App() {
   return (
