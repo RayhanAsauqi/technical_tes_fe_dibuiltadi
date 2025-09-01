@@ -1,6 +1,6 @@
 [build]
   command = "pnpm run build"
-  publish = "dist"  # folder output dari vite build
+  publish = "dist"  
 
 [[redirects]]
   from = "/*"
