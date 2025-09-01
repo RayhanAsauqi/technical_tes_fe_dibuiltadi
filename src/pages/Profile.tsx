@@ -13,8 +13,8 @@ import { useFetch } from "@/hooks/use-fetch";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ProfilePage() {
-  const { data: userData, loading } = useFetch<ProfileRes>(`${API_ENDPOINT}/auth/profile`);
   const navigate = useNavigate();
+  const { data: userData, loading } = useFetch<ProfileRes>(`${API_ENDPOINT}/auth/profile`);
   const { isOpen, onOpen, setIsOpenAction } = useDisclosure();
 
   const handleBack = () => {
